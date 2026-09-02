@@ -18,3 +18,24 @@ export const todayWorkouts = [
       workout: "Costas e Bíceps",
     },
   ];
+
+  export const workouts = [
+    {
+      id: 1,
+      name: "Hipertrofia A",
+      description: "Peito e tríceps",
+      exercises: 5,
+    },
+    {
+      id: 2,
+      name: "Pernas",
+      description: "Glúteos e quadríceps",
+      exercises: 6,
+    },
+    {
+      id: 3,
+      name: "Costas e Bíceps",
+      description: "Dorsal e membros superiores",
+      exercises: 4,
+    },
+  ];

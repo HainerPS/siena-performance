@@ -1,38 +1,38 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard } from "@/components/ui/app-card";
 
 import { todayWorkouts } from "@/data/workouts";
 
 export function TodayWorkouts() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
+    <AppCard>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-foreground">
           Treinos de hoje
-        </CardTitle>
-      </CardHeader>
+        </h3>
 
-      <CardContent className="space-y-4">
-        {todayWorkouts.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between rounded-lg border p-4"
-          >
-            <div>
-              <p className="font-medium">
-                {item.student}
-              </p>
+        <div className="space-y-4">
+          {todayWorkouts.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between rounded-xl border border-border bg-muted p-4"
+            >
+              <div>
+                <p className="font-medium text-foreground">
+                  {item.student}
+                </p>
 
-              <p className="text-sm text-muted-foreground">
-                {item.workout}
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  {item.workout}
+                </p>
+              </div>
+
+              <span className="text-sm font-semibold text-primary">
+                {item.time}
+              </span>
             </div>
-
-            <span className="text-sm font-semibold">
-              {item.time}
-            </span>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+          ))}
+        </div>
+      </div>
+    </AppCard>
   );
 }

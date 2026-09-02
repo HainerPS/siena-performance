@@ -1,38 +1,46 @@
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-  } from "@/components/ui/card";
-  
-  type StudentCardProps = {
-    name: string;
-    goal: string;
-    status: string;
-  };
-  
-  export function StudentCard({
-    name,
-    goal,
-    status,
-  }: StudentCardProps) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {name}
-          </CardTitle>
-        </CardHeader>
-  
-        <CardContent className="space-y-2">
+import { AppCard } from "@/components/ui/app-card";
+import { EditStudentDialog } from "./edit-student-dialog";
+
+type StudentCardProps = {
+  id: string;
+  name: string;
+  goal: string;
+  status: string;
+  onStudentUpdated?: () => void;
+};
+
+export function StudentCard({
+  id,
+  name,
+  goal,
+  status,
+  onStudentUpdated,
+}: StudentCardProps) {
+  return (
+    <AppCard>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-foreground">
+          {name}
+        </h3>
+
+        <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
             Objetivo: {goal}
           </p>
-  
-          <p className="text-sm">
+
+          <p className="text-sm font-medium text-primary">
             Status: {status}
           </p>
-        </CardContent>
-      </Card>
-    );
-  }
+        </div>
+
+        <EditStudentDialog
+          studentId={id}
+          initialName={name}
+          initialGoal={goal}
+          initialStatus={status}
+          onStudentUpdated={onStudentUpdated}
+        />
+      </div>
+    </AppCard>
+  );
+}

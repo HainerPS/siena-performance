@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard } from "@/components/ui/app-card";
 
 interface StatsCardProps {
   title: string;
@@ -14,22 +14,22 @@ export function StatsCard({
   icon,
 }: StatsCardProps) {
   return (
-    <Card>
-      <CardContent className="flex items-center justify-between p-6">
+    <AppCard className="p-6">
+      <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm font-medium text-muted-foreground">
             {title}
           </p>
 
-          <h3 className="mt-2 text-3xl font-bold">
+          <h3 className="mt-3 text-3xl font-bold tracking-tight text-foreground">
             {value}
           </h3>
         </div>
 
-        <div className="text-muted-foreground">
+        <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
           {icon}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </AppCard>
   );
 }

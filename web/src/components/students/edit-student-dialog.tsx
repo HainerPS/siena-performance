@@ -14,18 +14,27 @@ import { Input } from "@/components/ui/input";
 
 import { createClient } from "@/lib/supabase/client";
 
-interface NewStudentDialogProps {
-  onStudentCreated?: () => void;
+interface EditStudentDialogProps {
+  studentId: string;
+  initialName: string;
+  initialGoal: string;
+  initialStatus: string;
+  onStudentUpdated?: () => void;
 }
 
-export function NewStudentDialog({
-  onStudentCreated,
-}: NewStudentDialogProps) {
-  const [name, setName] = useState("");
-  const [goal, setGoal] = useState("");
+export function EditStudentDialog({
+  studentId,
+  initialName,
+  initialGoal,
+  initialStatus,
+  onStudentUpdated,
+}: EditStudentDialogProps) {
+  const [name, setName] = useState(initialName);
+  const [goal, setGoal] = useState(initialGoal);
+  const [status, setStatus] = useState(initialStatus);
   const [loading, setLoading] = useState(false);
 
-  async function handleCreateStudent() {
+  async function handleUpdateStudent() {
     if (!name.trim()) {
       alert("Digite o nome do aluno.");
       return;
@@ -35,43 +44,35 @@ export function NewStudentDialog({
 
     const supabase = createClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      alert("Usuário não autenticado.");
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await supabase.from("students").insert({
-      trainer_id: user.id,
-      name: name.trim(),
-      goal: goal.trim() || null,
-      status: "active",
-    });
+    const { error } = await supabase
+      .from("students")
+      .update({
+        name: name.trim(),
+        goal: goal.trim() || null,
+        status,
+      })
+      .eq("id", studentId);
 
     if (error) {
       console.error(error);
-      alert("Não foi possível cadastrar o aluno.");
+      alert("Não foi possível atualizar o aluno.");
       setLoading(false);
       return;
     }
 
-    setName("");
-    setGoal("");
     setLoading(false);
-
-    onStudentCreated?.();
+    onStudentUpdated?.();
   }
 
   return (
     <Dialog>
       <DialogTrigger
         render={
-          <Button className="rounded-xl bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
-            + Novo aluno
+          <Button
+            variant="outline"
+            className="rounded-xl"
+          >
+            Editar
           </Button>
         }
       />
@@ -79,7 +80,7 @@ export function NewStudentDialog({
       <DialogContent className="border-border bg-card text-card-foreground">
         <DialogHeader>
           <DialogTitle className="text-xl text-foreground">
-            Novo aluno
+            Editar aluno
           </DialogTitle>
         </DialogHeader>
 
@@ -98,12 +99,21 @@ export function NewStudentDialog({
             className="border-border bg-background text-foreground placeholder:text-muted-foreground"
           />
 
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
+          >
+            <option value="active">Ativo</option>
+            <option value="inactive">Inativo</option>
+          </select>
+
           <Button
-            onClick={handleCreateStudent}
+            onClick={handleUpdateStudent}
             disabled={loading}
             className="w-full rounded-xl bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
           >
-            {loading ? "Salvando..." : "Salvar aluno"}
+            {loading ? "Salvando..." : "Salvar alterações"}
           </Button>
         </div>
       </DialogContent>

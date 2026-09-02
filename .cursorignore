@@ -1,0 +1,10 @@
+node_modules/
+web/node_modules/
+
+.next/
+web/.next/
+
+.git/
+
+supabase/.branches/
+supabase/.temp/
