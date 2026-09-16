@@ -1,7 +1,17 @@
-import { WorkoutsList } from "@/components/workouts/workouts-list";
+"use client";
+
+import { useState } from "react";
+
 import { NewWorkoutDialog } from "@/components/workouts/new-workout-dialog";
+import { WorkoutsList } from "@/components/workouts/workouts-list";
 
 export default function WorkoutsPage() {
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  function handleWorkoutCreated() {
+    setRefreshKey((current) => current + 1);
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -15,10 +25,12 @@ export default function WorkoutsPage() {
           </p>
         </div>
 
-        <NewWorkoutDialog />
+        <NewWorkoutDialog
+          onWorkoutCreated={handleWorkoutCreated}
+        />
       </div>
 
-      <WorkoutsList />
+      <WorkoutsList refreshKey={refreshKey} />
     </div>
   );
 }
