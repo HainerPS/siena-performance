@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import Link from "next/link";
+
 import { AppCard } from "@/components/ui/app-card";
 import { createClient } from "@/lib/supabase/client";
 
@@ -116,29 +118,35 @@ export default function HistoryPage() {
             const isCompleted = session.completed_at !== null;
 
             return (
-              <AppCard key={session.id}>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">
-                      {session.workout?.name ?? "Treino não encontrado"}
-                    </h3>
+              <Link
+                key={session.id}
+                href={`/history/${session.id}`}
+                className="block"
+              >
+                <AppCard>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        {session.workout?.name ?? "Treino não encontrado"}
+                      </h3>
 
-                    <p className="mt-1 text-sm font-medium text-primary">
-                      {session.student?.name ?? "Aluno não encontrado"}
-                    </p>
+                      <p className="mt-1 text-sm font-medium text-primary">
+                        {session.student?.name ?? "Aluno não encontrado"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        {formatSessionDate(session.started_at)}
+                      </p>
+
+                      <p className="text-sm font-medium text-primary">
+                        {isCompleted ? "Concluído" : "Em andamento"}
+                      </p>
+                    </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      {formatSessionDate(session.started_at)}
-                    </p>
-
-                    <p className="text-sm font-medium text-primary">
-                      {isCompleted ? "Concluído" : "Em andamento"}
-                    </p>
-                  </div>
-                </div>
-              </AppCard>
+                </AppCard>
+              </Link>
             );
           })}
         </div>
