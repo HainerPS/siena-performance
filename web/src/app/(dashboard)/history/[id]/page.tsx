@@ -14,6 +14,7 @@ interface NamedRelation {
 
 interface WorkoutSession {
   id: string;
+  student_id: string;
   started_at: string;
   completed_at: string | null;
   workout: NamedRelation | null;
@@ -22,6 +23,7 @@ interface WorkoutSession {
 
 interface WorkoutExercise {
   id: string;
+  exercise_id: string;
   position: number;
   sets: number | null;
   repetitions: number | null;
@@ -51,10 +53,7 @@ function asNamedRelation(
 }
 
 function asWorkoutExercise(
-  value:
-    | WorkoutExercise
-    | WorkoutExercise[]
-    | null,
+  value: WorkoutExercise | WorkoutExercise[] | null,
 ): WorkoutExercise | null {
   if (!value) {
     return null;
@@ -65,6 +64,22 @@ function asWorkoutExercise(
   }
 
   return value;
+}
+
+function getExerciseId(
+  value:
+    | { exercise_id: string }
+    | { exercise_id: string }[]
+    | null
+    | undefined,
+): string | null {
+  if (!value) return null;
+
+  if (Array.isArray(value)) {
+    return value[0]?.exercise_id ?? null;
+  }
+
+  return value.exercise_id;
 }
 
 function formatSessionDate(value: string) {
@@ -84,6 +99,7 @@ function formatRest(seconds: number | null) {
   }
 
   const minutes = Math.floor(seconds / 60);
+
   const remainingSeconds = seconds % 60;
 
   if (remainingSeconds === 0) {
@@ -104,6 +120,15 @@ export default function SessionDetailsPage() {
   const [exerciseResults, setExerciseResults] =
     useState<WorkoutExerciseResult[]>([]);
 
+  const [exerciseHistory, setExerciseHistory] =
+    useState<
+      {
+        exercise_id: string;
+        started_at: string;
+        max_weight: number;
+      }[]
+    >([]);
+
   const [loading, setLoading] = useState(true);
 
   const [error, setError] =
@@ -122,6 +147,7 @@ export default function SessionDetailsPage() {
       .from("workout_sessions")
       .select(`
         id,
+        student_id,
         started_at,
         completed_at,
         workout:workouts (
@@ -159,6 +185,7 @@ export default function SessionDetailsPage() {
 
     setSession({
       id: data.id,
+      student_id: data.student_id,
       started_at: data.started_at,
       completed_at: data.completed_at,
       workout: asNamedRelation(data.workout),
@@ -176,6 +203,7 @@ export default function SessionDetailsPage() {
         completed,
         workout_exercise:workout_exercises (
           id,
+          exercise_id,
           position,
           sets,
           repetitions,
@@ -194,6 +222,7 @@ export default function SessionDetailsPage() {
       );
 
       setExerciseResults([]);
+
       setExercisesError(
         "Não foi possível carregar os exercícios desta sessão.",
       );
@@ -218,6 +247,79 @@ export default function SessionDetailsPage() {
       );
 
       setExerciseResults(normalizedResults);
+    }
+
+    const {
+      data: historyData,
+      error: historyError,
+    } = await supabase
+      .from("workout_exercise_results")
+      .select(`
+        id,
+        max_weight,
+        workout_exercise:workout_exercises (
+          exercise_id
+        ),
+        session:workout_sessions!inner (
+          id,
+          student_id,
+          started_at
+        )
+      `)
+      .eq("session.student_id", data.student_id)
+      .not("max_weight", "is", null);
+
+    if (historyError) {
+      console.error(
+        "Erro ao carregar histórico dos exercícios:",
+        historyError,
+      );
+
+      setExerciseHistory([]);
+    } else {
+      const normalizedHistory =
+        (historyData ?? [])
+          .filter((item) => {
+            const exerciseId =
+              getExerciseId(
+                item.workout_exercise,
+              );
+
+            const sessionData = Array.isArray(
+              item.session,
+            )
+              ? item.session[0]
+              : item.session;
+
+            return (
+              exerciseId &&
+              sessionData &&
+              sessionData.id !== sessionId &&
+              sessionData.started_at <
+              data.started_at
+            );
+          })
+          .map((item) => {
+            const exerciseId =
+              getExerciseId(
+                item.workout_exercise,
+              );
+
+            const sessionData = Array.isArray(
+              item.session,
+            )
+              ? item.session[0]
+              : item.session;
+
+            return {
+              exercise_id: exerciseId!,
+              started_at:
+                sessionData!.started_at,
+              max_weight: item.max_weight!,
+            };
+          });
+
+      setExerciseHistory(normalizedHistory);
     }
 
     setLoading(false);
@@ -351,6 +453,20 @@ export default function SessionDetailsPage() {
                 const exercise =
                   result.workout_exercise;
 
+                const previousLoads = exerciseHistory.filter(
+                  (history) =>
+                    history.exercise_id === exercise?.exercise_id,
+                );
+
+                const previousMaxWeight =
+                  previousLoads.length > 0
+                    ? Math.max(
+                      ...previousLoads.map(
+                        (history) => history.max_weight,
+                      ),
+                    )
+                    : null;
+
                 return (
                   <AppCard key={result.id}>
                     <div className="space-y-5">
@@ -360,7 +476,9 @@ export default function SessionDetailsPage() {
                         </p>
 
                         <h3 className="mt-1 text-xl font-semibold text-foreground">
-                          {asNamedRelation(exercise?.exercise)?.name ??
+                          {asNamedRelation(
+                            exercise?.exercise,
+                          )?.name ??
                             "Exercício não encontrado"}
                         </h3>
                       </div>
@@ -396,7 +514,7 @@ export default function SessionDetailsPage() {
                           <p className="mt-1 text-lg font-semibold text-foreground">
                             {formatRest(
                               exercise?.rest_seconds ??
-                                null,
+                              null,
                             )}
                           </p>
                         </div>
@@ -409,19 +527,24 @@ export default function SessionDetailsPage() {
                           </p>
 
                           <p className="mt-1 text-lg font-semibold text-foreground">
-                            {result.max_weight !==
-                            null
+                            {result.max_weight !== null
                               ? `${result.max_weight} kg`
                               : "Não informado"}
+                          </p>
+
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Sessões anteriores:{" "}
+                            {previousMaxWeight !== null
+                              ? `${previousMaxWeight} kg`
+                              : "Nenhum registro"}
                           </p>
                         </div>
 
                         <p
-                          className={`text-sm font-semibold ${
-                            result.completed
+                          className={`text-sm font-semibold ${result.completed
                               ? "text-primary"
                               : "text-muted-foreground"
-                          }`}
+                            }`}
                         >
                           {result.completed
                             ? "✓ Concluído"
