@@ -13,7 +13,7 @@ interface Workout {
   student_id: string;
   student: {
     name: string;
-  } | null;
+  } | { name: string }[] | null;
 }
 
 interface WorkoutExercise {
@@ -24,7 +24,7 @@ interface WorkoutExercise {
   rest_seconds: number | null;
   exercise: {
     name: string;
-  } | null;
+  } | { name: string }[] | null;
 }
 
 function formatRest(seconds: number | null) {
@@ -416,9 +416,9 @@ export default function ExecuteWorkoutPage() {
     );
   }
 
-  const studentName =
-    workout.student?.name ??
-    "Aluno não encontrado";
+  const studentName = Array.isArray(workout.student)
+    ? workout.student[0]?.name ?? "Aluno não encontrado"
+    : workout.student?.name ?? "Aluno não encontrado";
 
   const workoutStarted = !!sessionId;
 
@@ -506,9 +506,11 @@ export default function ExecuteWorkoutPage() {
                       </p>
 
                       <h2 className="mt-1 text-xl font-semibold text-foreground">
-                        {workoutExercise.exercise
-                          ?.name ??
-                          "Exercício não encontrado"}
+                        {Array.isArray(workoutExercise.exercise)
+                          ? workoutExercise.exercise[0]?.name ??
+                            "Exercício não encontrado"
+                          : workoutExercise.exercise?.name ??
+                            "Exercício não encontrado"}
                       </h2>
                     </div>
                   </div>

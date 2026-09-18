@@ -16,7 +16,7 @@ interface Workout {
   description: string | null;
   student: {
     name: string;
-  } | null;
+  } | { name: string }[] | null;
 }
 
 interface WorkoutExercise {
@@ -27,7 +27,7 @@ interface WorkoutExercise {
   rest_seconds: number | null;
   exercise: {
     name: string;
-  } | null;
+  } | { name: string }[] | null;
 }
 
 function formatRest(seconds: number | null) {
@@ -145,8 +145,9 @@ export default function WorkoutPage() {
     );
   }
 
-  const studentName =
-    workout.student?.name ?? "Aluno não encontrado";
+  const studentName = Array.isArray(workout.student)
+    ? workout.student[0]?.name ?? "Aluno não encontrado"
+    : workout.student?.name ?? "Aluno não encontrado";
 
   return (
     <div className="space-y-8">
@@ -190,8 +191,11 @@ export default function WorkoutPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <h3 className="font-semibold text-foreground">
-                      {workoutExercise.exercise?.name ??
-                        "Exercício não encontrado"}
+                      {Array.isArray(workoutExercise.exercise)
+                        ? workoutExercise.exercise[0]?.name ??
+                          "Exercício não encontrado"
+                        : workoutExercise.exercise?.name ??
+                          "Exercício não encontrado"}
                     </h3>
 
                     <div className="mt-3 grid grid-cols-3 gap-3">

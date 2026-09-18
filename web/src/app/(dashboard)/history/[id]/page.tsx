@@ -26,7 +26,7 @@ interface WorkoutExercise {
   sets: number | null;
   repetitions: number | null;
   rest_seconds: number | null;
-  exercise: NamedRelation | null;
+  exercise: NamedRelation | NamedRelation[] | null;
 }
 
 interface WorkoutExerciseResult {
@@ -37,7 +37,7 @@ interface WorkoutExerciseResult {
 }
 
 function asNamedRelation(
-  value: NamedRelation | NamedRelation[] | null,
+  value: NamedRelation | NamedRelation[] | null | undefined,
 ): NamedRelation | null {
   if (!value) {
     return null;
@@ -360,8 +360,7 @@ export default function SessionDetailsPage() {
                         </p>
 
                         <h3 className="mt-1 text-xl font-semibold text-foreground">
-                          {exercise?.exercise
-                            ?.name ??
+                          {asNamedRelation(exercise?.exercise)?.name ??
                             "Exercício não encontrado"}
                         </h3>
                       </div>

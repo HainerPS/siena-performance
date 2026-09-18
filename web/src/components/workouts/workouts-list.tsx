@@ -13,7 +13,7 @@ interface Workout {
   student_id: string;
   student: {
     name: string;
-  } | null;
+  } | { name: string }[] | null;
   workout_exercises: {
     id: string;
   }[];
@@ -93,7 +93,9 @@ export function WorkoutsList({
           name={workout.name}
           description={workout.description ?? "Sem descrição"}
           studentName={
-            workout.student?.name ?? "Aluno não encontrado"
+            Array.isArray(workout.student)
+              ? workout.student[0]?.name ?? "Aluno não encontrado"
+              : workout.student?.name ?? "Aluno não encontrado"
           }
           exercises={workout.workout_exercises?.length ?? 0}
         />
