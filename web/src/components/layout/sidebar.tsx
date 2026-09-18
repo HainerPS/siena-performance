@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   CalendarDays,
   Dumbbell,
+  History,
   LayoutDashboard,
   Settings,
   TrendingUp,
@@ -27,6 +28,11 @@ const menuItems = [
     title: "Treinos",
     href: "/workouts",
     icon: Dumbbell,
+  },
+  {
+    title: "Histórico",
+    href: "/history",
+    icon: History,
   },
   {
     title: "Evolução",
